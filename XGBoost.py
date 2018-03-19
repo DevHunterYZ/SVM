@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import xgboost as XGBClassifier
 train_set = pd.read_csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data', header = None)
 test_set = pd.read_csv('http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test',
                       skiprows = 1, header = None) # Make sure to skip a row for the test set
