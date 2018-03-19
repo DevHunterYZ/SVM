@@ -48,4 +48,41 @@ GridSearchCV(cv=5, error_score='raise',
        fit_params={}, iid=True, n_jobs=-1,
        param_grid={'min_child_weight': [1, 3, 5], 'max_depth': [3, 5, 7]},
        pre_dispatch='2*n_jobs', refit=True, scoring='accuracy', verbose=0)
+optimized_GBM.grid_scores_
+cv_params = {'learning_rate': [0.1, 0.01], 'subsample': [0.7,0.8,0.9]}
+ind_params = {'n_estimators': 1000, 'seed':0, 'colsample_bytree': 0.8, 
+             'objective': 'binary:logistic', 'max_depth': 3, 'min_child_weight': 1}
 
+
+optimized_GBM = GridSearchCV(xgb.XGBClassifier(**ind_params), 
+                            cv_params, 
+                             scoring = 'accuracy', cv = 5, n_jobs = -1)
+optimized_GBM.fit(final_train, y_train)
+optimized_GBM.grid_scores_
+xgdmat = xgb.DMatrix(final_train, y_train) # Create our DMatrix to make XGBoost more efficient
+our_params = {'eta': 0.1, 'seed':0, 'subsample': 0.8, 'colsample_bytree': 0.8, 
+             'objective': 'binary:logistic', 'max_depth':3, 'min_child_weight':1} 
+
+
+cv_xgb = xgb.cv(params = our_params, dtrain = xgdmat, num_boost_round = 3000, nfold = 5,
+                metrics = ['error'], # Make sure you enter metrics inside a list or you may encounter issues!
+                early_stopping_rounds = 100) # Look for early stopping that minimizes error
+cv_xgb.tail(5)
+our_params = {'eta': 0.1, 'seed':0, 'subsample': 0.8, 'colsample_bytree': 0.8, 
+             'objective': 'binary:logistic', 'max_depth':3, 'min_child_weight':1} 
+
+final_gb = xgb.train(our_params, xgdmat, num_boost_round = 432)
+%matplotlib inline
+import seaborn as sns
+sns.set(font_scale = 1.5)
+xgb.plot_importance(final_gb)
+importances = final_gb.get_fscore()
+importances
+
+testdmat = xgb.DMatrix(final_test)
+from sklearn.metrics import accuracy_score
+y_pred = final_gb.predict(testdmat) # Predict using our testdmat
+y_pred[y_pred > 0.5] = 1
+y_pred[y_pred <= 0.5] = 0
+y_pred
+accuracy_score(y_pred, y_test), 1-accuracy_score(y_pred, y_test)
