@@ -1,2 +1,1 @@
-# SVM
-Support Vector Machines
+XGBoost
